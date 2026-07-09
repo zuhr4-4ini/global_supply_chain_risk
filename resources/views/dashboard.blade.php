@@ -10,13 +10,15 @@
     <div class="mb-4">
         <label for="country" class="form-label">Select Country</label>
 
-        <select class="form-select" id="country">
+    <form action="/" method="GET">
+
+        <select class="form-select" id="country" name="country" onchange="this.form.submit()">
             <option selected>Select a Country</option>
             <option>Indonesia</option>
             <option>Germany</option>
             <option>China</option>
             <option>Australia</option>
-            <option>American</option>
+            <option>USA</option>
             <option>Korea</option>
             <option>Canada</option>
             <option>Japan</option>
@@ -25,9 +27,12 @@
             <option>Singapore</option>
             <option>Saudi Arabia</option>
             <option>New Zealand</option>
-            <optoin>Switzerland</option>
+            <option>Switzerland</option>
         </select>
-    </div>
+
+    </form>
+
+</div>
 
     <div class="row">
 
@@ -53,7 +58,11 @@
             <div class="card">
                 <div class="card-body">
                     <h5>Currency</h5>
-                    <h3>-</h3>
+                    <h4>{{ $currency_code }}</h4>
+                    <p>{{ $currency_name }}</p>
+                    <p><strong>1 USD =</strong> {{ number_format($exchange_rate, 2) }} {{ $currency_code }}</p>
+                    <p><strong>Region:</strong> {{ $region }}</p>
+                    <p><strong>Language:</strong> {{ $language }}</p>
                 </div>
             </div>
         </div>
@@ -92,7 +101,7 @@
             </div>
 
             <div class="card-body" style="height:300px;">
-                Map will be displayed here.
+                <div id="map" style="height:300px;"></div>
             </div>
         </div>
     </div>
