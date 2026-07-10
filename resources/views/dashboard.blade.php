@@ -40,7 +40,9 @@
             <div class="card">
                 <div class="card-body">
                     <h5>GDP</h5>
-                    <h3>-</h3>
+                    <h3>
+                        US$ {{ number_format($gdp_trillion, 2) }} T
+                    </h3>
                 </div>
             </div>
         </div>

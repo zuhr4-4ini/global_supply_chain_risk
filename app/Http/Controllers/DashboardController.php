@@ -15,6 +15,15 @@ class DashboardController extends Controller
                 $country = 'Indonesia';
             }
 
+            $countryCodes = [
+                'Indonesia' => 'IDN',
+                'Japan' => 'JPN',
+                'Germany' => 'DEU',
+                'Australia' => 'AUS',
+            ];
+
+            $countryCode = $countryCodes[$country];
+
             $coordinates = [
                 'Indonesia' => ['lat' => -6.221441, 'lon' => 106.78094],
                 'Japan' => ['lat' => 35.6762, 'lon' => 139.6503],
@@ -59,6 +68,8 @@ class DashboardController extends Controller
                 $region = $countryData['region'];
                 $language = $countryData['language'];
 
+            //open-meteo => weather
+
             $response = Http::get("https://api.open-meteo.com/v1/forecast?latitude={$latitude}&longitude={$longitude}&current=temperature_2m,wind_speed_10m");
     
             $weather = $response->json();
@@ -67,6 +78,22 @@ class DashboardController extends Controller
 
             $exchange = $exchangeResponse->json();
             $exchange_rate = $exchange['rates'][$currency_code];
+
+            //GDP
+
+            $gdpRespone = Http::get("https://api.worldbank.org/v2/country/{$countryCode}/indicator/NY.GDP.MKTP.CD?format=json");
+
+            $gdp = $gdpRespone->json()[1][0]['value'];
+
+            $gdp_trillion = $gdp / 1000000000000;
+
+            //population
+
+            $populationResponse = Http::get("https://api.worldbank.org/v2/country/{$countryCode}/indicator/SP.POP.TOTL?format=json");
+
+            $population = $populationResponse->json()[1][0]['value'];
+
+            $population_million = $population / 1000000;
 
             $temperature = $weather['current']['temperature_2m'];
             $wind_speed = $weather['current']['wind_speed_10m'];
@@ -82,6 +109,8 @@ class DashboardController extends Controller
                 'latitude' => $latitude,
                 'longitude' => $longitude,
                 'country' => $country,
+                'gdp_trillion' => $gdp_trillion,
+                'population' => $population,
             ]);
         }
 }
