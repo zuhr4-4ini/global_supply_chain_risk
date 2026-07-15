@@ -19,26 +19,6 @@
 
     @yield('content')
 
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-    <script>
-
-        var map = L.map('map').setView(
-            [{{ $latitude }}, {{ $longitude }}],
-            5
-        );
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
-        }).addTo(map);
-
-        L.marker([{{ $latitude }}, {{ $longitude }}])
-            .addTo(map)
-            .bindPopup("{{ $country }}")
-            .openPopup();
-            
-    </script>
-
 </body>
 
 </html>

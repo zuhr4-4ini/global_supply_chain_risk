@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
 
-            <a class="navbar-brand" href="/">Global Supply Chain</a>
+            <h2 class="navbar-brand" href="/">Global Supply Chain Risk</h2>
 
             <div class="navbar-nav ms-auto">
                 <a class="nav-link" href="/">Dashboard</a>
