@@ -5,9 +5,9 @@
 
             <div class="navbar-nav ms-auto">
                 <a class="nav-link" href="/">Dashboard</a>
-                <a class="nav-link" href="#">Compare</a>
-                <a class="nav-link" href="#">Favorite</a>
-                <a class="nav-link" href="#">Admin</a>
+                <a class="nav-link" href="{{ route('compare') }}">Compare</a>
+                <a class="nav-link" href="{{ route('favorite') }}"> Favorite</a>
+                <a class="nav-link" href="{{ route('admin') }}">Admin</a>
             </div>
             
         </div>

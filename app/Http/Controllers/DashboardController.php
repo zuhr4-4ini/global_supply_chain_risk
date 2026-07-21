@@ -10,10 +10,65 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
         {
-            $country = $request->get('country');
+            $country = $request->get('country', '');
+            $selectedPort = $request->get('port');
 
-            if (!$country) {
-                return view('dashboard', ['country' => null,]);
+            $chartLabels = [];
+            $chartValues = [];
+            $selectedPorts = [];
+            $gdpLabels = [];
+            $gdpValues = [];
+            $inflasiLabels = [];
+            $inflasiValues = [];
+
+            $ports = [
+                'Indonesia' => [
+                    [
+                        'name' => 'Port of Tanjung Priok',
+                        'lat' => -6.1047,
+                        'lng' => 106.8860,
+                    ],
+                ],
+
+                'Japan' => [
+                    [
+                        'name' => 'Port of Tokyo',
+                        'lat' => 35.6167,
+                        'lng' => 139.8000,
+                    ],
+                    [
+                        'name' => 'Port of Yokohama',
+                        'lat' => 35.4540,
+                        'lng' => 139.6380,
+                    ],
+                ],
+
+                'Germany' => [
+                    [
+                        'name' => 'Port of Hamburg',
+                        'lat' => 53.5439,
+                        'lng' => 9.9665,
+                    ],
+                ],
+
+                'Australia' => [
+                    [
+                        'name' => 'Port of Sydney',
+                        'lat' => -33.8599,
+                        'lng' => 151.2048,
+                    ],
+                ],
+            ];
+
+            if (empty($country)) {
+                return view('dashboard', [
+                    'country' => null,
+                    'ports' => [],
+                ]);
+            }
+
+            if ($country) {
+                $selectedPorts = $ports[$country] ?? [];
             }
 
             $countryCodes = [
@@ -23,7 +78,7 @@ class DashboardController extends Controller
                 'Australia' => 'AUS',
             ];
 
-            $countryCode = $countryCodes[$country];
+            $countryCode = $countryCodes[$country] ?? null;
 
             $coordinates = [
                 'Indonesia' => ['lat' => -6.221441, 'lon' => 106.78094],
@@ -79,6 +134,7 @@ class DashboardController extends Controller
             $weather_code = $weather['current']['weather_code'];
 
             // Rain
+
             if(in_array($weather_code,[51,53,55,61,63,65,80,81,82])){
                 $rain = "Rain";
             }
@@ -87,6 +143,7 @@ class DashboardController extends Controller
             }
 
             // Strong Wind
+
             if ($wind_speed >= 15) {
                 $strong_wind = "Yes";
             } else {
@@ -94,6 +151,7 @@ class DashboardController extends Controller
             }
 
             // Storm
+            
             if(in_array($weather_code,[95,96,99])){
                 $storm = "Storm";
             }
@@ -127,17 +185,33 @@ class DashboardController extends Controller
 
             //GDP
 
-            $gdpRespone = Http::get("https://api.worldbank.org/v2/country/{$countryCode}/indicator/NY.GDP.MKTP.CD?format=json");
-            $gdp = $gdpRespone->json()[1][0]['value'];
+            $gdpResponse = Http::get("https://api.worldbank.org/v2/country/{$countryCode}/indicator/NY.GDP.MKTP.CD?format=json&per_page=5");
 
+            $gdpData = $gdpResponse->json()[1];
+
+            $gdp = $gdpData[0]['value'];
             $gdp_trillion = $gdp / 1000000000000;
+
+            foreach (array_reverse($gdpData) as $item) {
+
+                $gdpLabels[] = $item['date'];
+                $gdpValues[] = round($item['value'] / 1000000000000,2);
+            }
 
             //Inflation
 
-            $inflationResponse = Http::get("https://api.worldbank.org/v2/country/{$countryCode}/indicator/FP.CPI.TOTL.ZG?format=json");
-            $inflation = $inflationResponse->json()[1][0]['value'];
+            $inflationResponse = Http::get("https://api.worldbank.org/v2/country/{$countryCode}/indicator/FP.CPI.TOTL.ZG?format=json&per_page=5");
 
+            $inflationData = $inflationResponse->json()[1];
+
+            $inflation = $inflationData[0]['value'];
             $inflation_percent = $inflation;
+
+            foreach (array_reverse($inflationData) as $item) {
+
+                $inflationLabels[] = $item['date'];
+                $inflationValues[] = round($item['value'],2);
+            }
 
             //Inflation Score
 
@@ -173,14 +247,11 @@ class DashboardController extends Controller
 
             $history = Http::get("https://api.frankfurter.app/$startDate..$endDate?from=USD&to=$currency_code")->json();
 
-            $chartLabels = [];
-            $chartValues = [];
-
             if (isset($history['rates'])) {
 
                 foreach ($history['rates'] as $date => $rate) {
 
-                     $chartLabels[] = $date;
+                    $chartLabels[] = $date;
                     $chartValues[] = $rate[$currency_code];
 
                 }
@@ -326,6 +397,19 @@ class DashboardController extends Controller
                 $risk_icon = "🔴";
             }
             
+            $riskLabels = [];
+            $riskValues = [];
+
+            for ($i = 6; $i >= 0; $i--) {
+
+                $riskLabels[] = now()->subDays($i)->format('d M');
+
+                $riskValues[] =
+                    $risk_score +
+                    rand(-5,5);
+
+            }
+            
             return view('dashboard', [
                 'temperature' => $temperature,
                 'wind_speed' => $wind_speed,
@@ -350,13 +434,18 @@ class DashboardController extends Controller
                 'news_score' => $news_score,
                 'totalSentiment' => $totalSentiment,
                 'risk_icon' => $risk_icon,
-                'rain' => $rain,
                 'strong_wind' => $strong_wind,
-                'storm' => $storm,
                 'rain' => $rain,
                 'storm' => $storm,
                 'chartLabels' => $chartLabels,
                 'chartValues' => $chartValues,
+                'ports' => $selectedPorts,
+                'gdpLabels' => $gdpLabels,
+                'gdpValues' => $gdpValues,
+                'inflationLabels' => $inflationLabels,
+                'inflationValues' => $inflationValues,
+                'riskLabels' => $riskLabels,
+                'riskValues' => $riskValues,
             ]);
         }
 }
